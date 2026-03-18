@@ -1,0 +1,39 @@
+plugins {
+  id 'java'
+  id 'application'
+  id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'ru.mainplay_tg.ms2hash'
+version = '1.0.0'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'com.google.code.gson:gson:2.10.1' // JSON
+  implementation 'info.picocli:picocli:4.7.6' // argparse
+  implementation 'me.tongfei:progressbar:0.10.2' // progressbar
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+}
+
+application {
+  mainClass = 'ru.mainplay_tg.ms2hash.App'
+}
+
+jar {
+  manifest {
+    attributes 'Main-Class': 'ru.mainplay_tg.ms2hash.App'
+  }
+}
+
+shadowJar {
+  archiveClassifier.set('')
+  mergeServiceFiles()
+}

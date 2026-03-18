@@ -1,0 +1,7 @@
+.gradle
+.obsidian/*
+.spyproject/*
+*.bak
+*.pyc
+bin
+build

@@ -1,0 +1,1 @@
+[![Build and upload release](https://github.com/MainPlay-TG/MS2Hash.java/actions/workflows/build.yml/badge.svg)](https://github.com/MainPlay-TG/MS2Hash.java/actions/workflows/build.yml)

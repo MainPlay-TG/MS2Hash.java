@@ -1,0 +1,29 @@
+name: Build and upload release
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -U -r dev_utils/build-requirements.txt
+
+      - name: Build
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: python3 dev_utils/build-on-github.py
