@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'ru.mainplay_tg.ms2hash'
-version = '1.0.0'
+version = '1.0.1'
 
 repositories {
   mavenCentral()
@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
   implementation 'com.google.code.gson:gson:2.10.1' // JSON
+  implementation 'commons-codec:commons-codec:1.22.0' // HEX
   implementation 'info.picocli:picocli:4.7.6' // argparse
   implementation 'me.tongfei:progressbar:0.10.2' // progressbar
 }

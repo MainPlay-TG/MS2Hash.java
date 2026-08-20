@@ -35,7 +35,7 @@ log.info("Project: %s %s", proj_name, proj_version)
 info_file = PROJ_DIR / "src/main/resources/info.json"
 log.info("Building...")
 info_data = json5.loads(info_file.read_text())
-info_data["builded_at"] = ms.utcnow
+info_data["builded_at"] = int(ms.utcnow)
 info_data["name"] = proj_name
 info_data["version"] = proj_version
 info_file.write_json(info_data, sort_keys=True)

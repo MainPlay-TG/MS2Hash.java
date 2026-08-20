@@ -152,13 +152,15 @@ public class Util {
       byte[] buffer = new byte[bufferSize];
       if (show_bar && fileSize > bufferSize) {
         try (InputStream input = ProgressBar.wrap(fis, makeByteTransferBarBuilder(file.getName()))) {
-          while ((input.read(buffer)) != -1) {
-            hash.update(buffer);
+          int bytesRead;
+          while ((bytesRead = input.read(buffer)) != -1) {
+            hash.update(buffer, 0, bytesRead);
           }
         }
       } else {
-        while ((fis.read(buffer)) != -1) {
-          hash.update(buffer);
+        int bytesRead;
+        while ((bytesRead = fis.read(buffer)) != -1) {
+          hash.update(buffer, 0, bytesRead);
         }
       }
       return new HashResult(fileSize, hash.digest());
