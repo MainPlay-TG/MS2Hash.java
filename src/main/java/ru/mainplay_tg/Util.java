@@ -1,4 +1,4 @@
-package ru.mainplay_tg.ms2hash;
+package ru.mainplay_tg;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -9,6 +9,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.Locale;
+import java.util.UUID;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
@@ -97,14 +100,9 @@ public class Util {
     System.setErr(new java.io.PrintStream(System.err, true, encoding));
   }
 
-  public static String file_suffix = ".MS2_hash";
-
-  /**
-   * Убрать суффикс .MS2_hash
-   */
-  public static String removeFileSuffix(String path) {
-    int len = file_suffix.length();
-    String lower_suffix = file_suffix.toLowerCase(Locale.ROOT);
+  public static String removeFileSuffix(String path, String suffix) {
+    int len = suffix.length();
+    String lower_suffix = suffix.toLowerCase(Locale.ROOT);
     while (path.toLowerCase(Locale.ROOT).endsWith(lower_suffix)) {
       path = path.substring(0, path.length() - len);
     }
@@ -195,5 +193,19 @@ public class Util {
 
   public static void writeTextFile(Path path, String text) throws IOException {
     Files.write(path, text.getBytes(StandardCharsets.UTF_8));
+  }
+
+  public static byte[] uuidToBytes(UUID uuid) {
+    ByteBuffer buf = ByteBuffer.allocate(16);
+    buf.order(ByteOrder.BIG_ENDIAN);
+    buf.putLong(0, uuid.getMostSignificantBits());
+    buf.putLong(8, uuid.getLeastSignificantBits());
+    return buf.array();
+  }
+
+  public static UUID uuidFromBytes(byte[] data) {
+    ByteBuffer buf = ByteBuffer.wrap(data);
+    buf.order(ByteOrder.BIG_ENDIAN);
+    return new UUID(buf.getLong(0), buf.getLong(8));
   }
 }

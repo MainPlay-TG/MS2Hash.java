@@ -1,0 +1,63 @@
+{
+  "classes": {
+    "ms2hash": {
+      "name": "ru.mainplay_tg.ms2hash.App"
+    },
+    "ms2sign": {
+      "name": "ru.mainplay_tg.ms2sign.App",
+      "java_args": [
+        "--enable-native-access=ALL-UNNAMED"
+      ],
+      "required": [
+        "sqlite",
+        "ed25519"
+      ]
+    }
+  },
+  "dependencies": {
+    "gson": {
+      "group": "com.google.code.gson",
+      "artifact": "gson",
+      "version": "2.10.1",
+      "required": true
+    },
+    "common-codec": {
+      "group": "commons-codec",
+      "artifact": "commons-codec",
+      "version": "1.22.0",
+      "required": true
+    },
+    "picocli": {
+      "group": "info.picocli",
+      "artifact": "picocli",
+      "version": "4.7.6",
+      "required": true
+    },
+    "progressbar": {
+      "group": "me.tongfei",
+      "artifact": "progressbar",
+      "version": "0.10.2",
+      "required": true
+    },
+    "sqlite": {
+      "group": "org.xerial",
+      "artifact": "sqlite-jdbc",
+      "version": "3.53.4.0"
+    },
+    "ed25519": {
+      "group": "org.bouncycastle",
+      "artifact": "bcprov-jdk18on",
+      "version": "1.86"
+    }
+  },
+  "main_class": "ms2hash",
+  "java_version": [
+    [
+      21
+    ],
+    [
+      99
+    ]
+  ],
+  "format": 1
+}

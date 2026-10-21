@@ -20,11 +20,14 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import ru.mainplay_tg.ms2hash.Util.HashResult;
+import ru.mainplay_tg.Util;
+import ru.mainplay_tg.Util.HashResult;
 
 @Command(name = "ms2hash", subcommands = { GenCommand.class,
     CheckCommand.class }, description = "Утилита для генерации и проверки хешей MS2_hash", synopsisSubcommandLabel = "<command>", usageHelpWidth = 80)
 public class App implements Callable<Integer> {
+  public static final String fileSuffix = ".MS2_hash";
+
   public static void main(String[] args) {
     Util.fixEncoding();
     int exitCode;
@@ -65,7 +68,7 @@ class GenCommand implements Callable<Integer> {
   public Integer call() {
     if (help) {
       CommandLine.usage(this, System.err);
-      return 1;
+      return 0;
     }
     if (show_algs) {
       showAllAlgs();
@@ -123,9 +126,9 @@ class GenCommand implements Callable<Integer> {
   private int StatusOk = 2;
 
   private int genFile(String path, MessageDigest hash) throws IOException {
-    path = Util.removeFileSuffix(path);
+    path = Util.removeFileSuffix(path, App.fileSuffix);
     Path filePath = Paths.get(path);
-    Path hashPath = Paths.get(path + Util.file_suffix);
+    Path hashPath = Paths.get(path + App.fileSuffix);
     File fileFile = filePath.toFile();
     File hashFile = hashPath.toFile();
     if (!fileFile.exists()) {
@@ -157,7 +160,7 @@ class CheckCommand implements Callable<Integer> {
   public Integer call() {
     if (help) {
       CommandLine.usage(this, System.err);
-      return 1;
+      return 0;
     }
     int okFiles = 0;
     for (String i : files) {
@@ -203,9 +206,9 @@ class CheckCommand implements Callable<Integer> {
   private int StatusOk = 5;
 
   private int checkFile(String path) throws IOException, NoSuchAlgorithmException {
-    path = Util.removeFileSuffix(path);
+    path = Util.removeFileSuffix(path, App.fileSuffix);
     Path filePath = Paths.get(path);
-    Path hashPath = Paths.get(path + Util.file_suffix);
+    Path hashPath = Paths.get(path + App.fileSuffix);
     File fileFile = filePath.toFile();
     File hashFile = hashPath.toFile();
     if (!fileFile.exists()) {

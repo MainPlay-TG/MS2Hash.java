@@ -5,5 +5,27 @@
   "min_java_version": [
     21
   ],
-  "version_id": 4
+  "version_id": 5,
+  "dependencies": [
+    [
+      "com.google.code.gson",
+      "gson",
+      "2.10.1"
+    ],
+    [
+      "commons-codec",
+      "commons-codec",
+      "1.22.0"
+    ],
+    [
+      "info.picocli",
+      "picocli",
+      "4.7.6"
+    ],
+    [
+      "me.tongfei",
+      "progressbar",
+      "0.10.2"
+    ]
+  ]
 }

@@ -1,5 +1,7 @@
 package ru.mainplay_tg.ms2hash;
 
+import ru.mainplay_tg.Util;
+
 public class HashInfoV1 {
   public static class File {
     public Long size;

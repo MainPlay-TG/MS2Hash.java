@@ -1,11 +1,11 @@
 plugins {
   id 'java'
   id 'application'
-  id 'com.github.johnrengelman.shadow' version '8.1.1'
+ // id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'ru.mainplay_tg.ms2hash'
-version = '1.0.1'
+version = '1.1.0'
 
 repositories {
   mavenCentral()
@@ -16,6 +16,8 @@ dependencies {
   implementation 'commons-codec:commons-codec:1.22.0' // HEX
   implementation 'info.picocli:picocli:4.7.6' // argparse
   implementation 'me.tongfei:progressbar:0.10.2' // progressbar
+  implementation 'org.xerial:sqlite-jdbc:3.53.4.0' // SQLite
+  implementation 'org.bouncycastle:bcprov-jdk18on:1.86' // ed25519
 }
 
 java {
@@ -34,7 +36,7 @@ jar {
   }
 }
 
-shadowJar {
-  archiveClassifier.set('')
-  mergeServiceFiles()
-}
+// shadowJar {
+//   archiveClassifier.set('')
+//   mergeServiceFiles()
+// }

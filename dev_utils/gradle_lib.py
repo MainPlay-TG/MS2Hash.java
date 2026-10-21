@@ -31,4 +31,4 @@ class Gradle:
     return subprocess.run(**kw)
 
   def build(self, **kw):
-    return self.run("shadowJar", **kw)
+    return self.run("build", **kw)
