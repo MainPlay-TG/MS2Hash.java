@@ -13,7 +13,7 @@ public class ImportKeyCommand implements Callable<Integer> {
   @Option(names = { "--config" }, description = "путь к файлу конфига")
   String configPath;
   @Option(names = { "-n", "--no-alias", }, description = "Запретить алиасы в URL")
-  Boolean noAlias;
+  boolean noAlias;
   @Parameters(description = "URL публичного ключа")
   String url;
 
@@ -26,7 +26,6 @@ public class ImportKeyCommand implements Callable<Integer> {
     SignConfig cfg = new SignConfig(configPath);
     SignKeysDatabase db = cfg.getDatabase();
     db.importPubKey(url, !noAlias);
-    System.out.println("Ключ импортирован");
     return 0;
   }
 }

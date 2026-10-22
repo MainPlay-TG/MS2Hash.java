@@ -24,7 +24,6 @@ public class RemoveAliasCommand implements Callable<Integer> {
     SignConfig cfg = new SignConfig(configPath);
     SignKeysDatabase db = cfg.getDatabase();
     db.removeAlias(name);
-    System.out.println("Алиас убран из БД");
     return 0;
   }
 }

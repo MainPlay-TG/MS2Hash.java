@@ -39,6 +39,10 @@ info_data["builded_at"] = int(ms.utcnow)
 info_data["name"] = proj_name
 info_data["version"] = proj_version
 info_file.write_json(info_data, sort_keys=True)
+for _, _, files in (PROJ_DIR / "src/main/resources").walk2():
+  for file in files:
+    if file.suffix == ".json" and not file.samefile(info_file):
+      file.write_json(file.read_json(), sort_keys=True)
 gradle.build()
 jar_file = find_jar(PROJ_DIR / "build/libs")
 log.info("Build completed: %s", jar_file)

@@ -24,7 +24,6 @@ public class DelKeyCommand implements Callable<Integer> {
     SignConfig cfg = new SignConfig(configPath);
     SignKeysDatabase db = cfg.getDatabase();
     db.deleteKey(db.resolveUuid(uuid));
-    System.out.println("Ключ удалён из БД");
     return 0;
   }
 }

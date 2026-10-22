@@ -15,7 +15,7 @@ class CreateKeyCommand implements Callable<Integer> {
   @Option(names = { "-a", "--alias" }, description = "назначить ключу алиас")
   String setAlias;
   @Option(names = { "-d", "--default" }, description = "установить ключом по умолчанию")
-  Boolean setDefault;
+  boolean setDefault;
 
   @Override
   public Integer call() throws Exception {

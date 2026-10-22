@@ -132,7 +132,7 @@ public class SignKeysDatabase {
    */
   public String exportPubKey(byte[] uuid, String alias) throws SQLException {
     StringBuilder sb = new StringBuilder()
-        .append("ms2sign://pubkey/")
+        .append("ms2sign:/pubkey/")
         .append(Util.uuidFromBytes(uuid).toString())
         .append("/")
         .append(Base64.getUrlEncoder()

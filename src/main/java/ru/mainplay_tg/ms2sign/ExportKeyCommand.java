@@ -26,7 +26,6 @@ public class ExportKeyCommand implements Callable<Integer> {
     SignConfig cfg = new SignConfig(configPath);
     SignKeysDatabase db = cfg.getDatabase();
     String url = db.exportPubKey(db.resolveUuid(uuid), alias);
-    System.out.println("URL публичного ключа:");
     System.out.println(url);
     return 0;
   }

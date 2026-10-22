@@ -1,7 +1,10 @@
 {
   "classes": {
     "ms2hash": {
-      "name": "ru.mainplay_tg.ms2hash.App"
+      "name": "ru.mainplay_tg.ms2hash.App",
+      "optional": [
+        "progressbar"
+      ]
     },
     "ms2sign": {
       "name": "ru.mainplay_tg.ms2sign.App",
@@ -10,7 +13,11 @@
       ],
       "required": [
         "sqlite",
+        "sqlite_android",
         "ed25519"
+      ],
+      "optional": [
+        "progressbar"
       ]
     }
   },
@@ -36,13 +43,21 @@
     "progressbar": {
       "group": "me.tongfei",
       "artifact": "progressbar",
-      "version": "0.10.2",
-      "required": true
+      "version": "0.10.2"
     },
     "sqlite": {
       "group": "org.xerial",
       "artifact": "sqlite-jdbc",
       "version": "3.53.4.0"
+    },
+    "sqlite_android": {
+      "group": "org.xerial",
+      "artifact": "sqlite-jdbc",
+      "version": "3.53.4.0",
+      "platforms": [
+        "android"
+      ],
+      "classifier": "natives-android"
     },
     "ed25519": {
       "group": "org.bouncycastle",

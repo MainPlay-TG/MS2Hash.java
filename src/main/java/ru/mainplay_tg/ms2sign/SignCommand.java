@@ -67,6 +67,7 @@ public class SignCommand implements Callable<Integer> {
       try {
         if (signFile(file)) {
           okFiles += 1;
+          System.err.println(file + ": подпись завершена");
         }
       } catch (Exception e) {
         System.err.println(file + ": ошибка");

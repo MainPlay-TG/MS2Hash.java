@@ -6,6 +6,7 @@ import picocli.CommandLine.Command;
 import ru.mainplay_tg.Util;
 
 @Command(name = "ms2sign", subcommands = {
+    AddAliasCommand.class,
     CreateKeyCommand.class,
     DelKeyCommand.class,
     ExportKeyCommand.class,

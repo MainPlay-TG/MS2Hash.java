@@ -14,6 +14,8 @@ public class ListKeysCommand implements Callable<Integer> {
   boolean help;
   @Option(names = { "--config" }, description = "путь к файлу конфига")
   String configPath;
+  @Option(names = { "--private", }, description = "показывать только приватные ключи")
+  boolean onlyPrivate;
 
   @Override
   public Integer call() throws Exception {
@@ -25,9 +27,13 @@ public class ListKeysCommand implements Callable<Integer> {
     SignKeysDatabase db = cfg.getDatabase();
     byte[] defaultKey = (cfg.defaultKey != null && !cfg.defaultKey.isEmpty()) ? db.resolveUuid(cfg.defaultKey) : null;
     for (byte[] uuid : db.listAllKeys()) {
+      Boolean isPrivate = db.getPrivKey(uuid) != null;
+      if (onlyPrivate && !isPrivate) {
+        continue;
+      }
       System.out.println("Ключ " + Util.uuidFromBytes(uuid).toString());
+      System.out.println("  Тип: " + (isPrivate ? "приватный" : "публичный"));
       Set<String> aliases = db.getKeyAliases(uuid);
-      System.out.println("  Тип: " + (db.getPrivKey(uuid) == null ? "приватный" : "публичный"));
       if (!aliases.isEmpty()) {
         System.out.println("  Алиасы: " + aliases);
       }
