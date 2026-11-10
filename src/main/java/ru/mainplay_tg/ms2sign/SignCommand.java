@@ -44,6 +44,9 @@ public class SignCommand implements Callable<Integer> {
     }
     SignConfig cfg = new SignConfig(configPath);
     SignKeysDatabase db = cfg.getDatabase();
+    if (cfg.defaultBar) {
+      this.bar = true;
+    }
     if (selectedKey == null) {
       selectedKey = cfg.defaultKey;
       if (selectedKey == null) {

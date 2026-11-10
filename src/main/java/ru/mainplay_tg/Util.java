@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.RoundingMode;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
+import java.text.DecimalFormat;
 import java.util.Locale;
 import java.util.UUID;
 import me.tongfei.progressbar.ProgressBar;
@@ -207,5 +209,24 @@ public class Util {
     ByteBuffer buf = ByteBuffer.wrap(data);
     buf.order(ByteOrder.BIG_ENDIAN);
     return new UUID(buf.getLong(0), buf.getLong(8));
+  }
+
+  public static final int KB = 1024;
+  public static final int MB = 1024 * 1024;
+  public static final int GB = 1024 * 1024 * 1024;
+
+  public static String humanizeSize(long size) {
+    if (size < KB) {
+      return size + " B";
+    }
+    DecimalFormat df = new DecimalFormat("#.##");
+    df.setRoundingMode(RoundingMode.HALF_UP);
+    if (size < MB) {
+      return df.format(size / KB) + " KB";
+    }
+    if (size < GB) {
+      return df.format(size / MB) + " MB";
+    }
+    return df.format(size / GB) + " GB";
   }
 }

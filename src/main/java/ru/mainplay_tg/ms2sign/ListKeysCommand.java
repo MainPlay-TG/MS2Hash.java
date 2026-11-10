@@ -34,12 +34,15 @@ public class ListKeysCommand implements Callable<Integer> {
       System.out.println("Ключ " + Util.uuidFromBytes(uuid).toString());
       System.out.println("  Тип: " + (isPrivate ? "приватный" : "публичный"));
       Set<String> aliases = db.getKeyAliases(uuid);
-      if (!aliases.isEmpty()) {
-        System.out.println("  Алиасы: " + aliases);
+      if (aliases.size() == 1) {
+        System.out.println("  Алиас: " + String.join(", ", aliases));
+      } else if (aliases.size() > 1) {
+        System.out.println("  Алиасы: " + String.join(", ", aliases));
       }
       if (defaultKey != null && Arrays.equals(defaultKey, uuid)) {
         System.out.println("  Ключ по умолчанию");
       }
+      System.out.println();
     }
     return 0;
   }

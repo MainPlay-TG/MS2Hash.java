@@ -13,6 +13,8 @@ import java.util.concurrent.Callable;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
 import picocli.CommandLine;
@@ -44,6 +46,9 @@ public class VerifyCommand implements Callable<Integer> {
     SignConfig cfg = new SignConfig(configPath);
     this.db = cfg.getDatabase();
     this.digest = MessageDigest.getInstance("SHA3-256");
+    if (cfg.defaultBar) {
+      this.bar = true;
+    }
     int okFiles = 0;
     int totalFiles = files.size();
     for (String file : files) {
@@ -71,11 +76,7 @@ public class VerifyCommand implements Callable<Integer> {
     Path signPath = Paths.get(pathString + App.fileSuffix);
     File fileFile = filePath.toFile();
     File signFile = signPath.toFile();
-    // Проверить наличие файлов
-    if (!fileFile.exists()) {
-      System.err.println(pathString + ": файл не найден");
-      return false;
-    }
+    // Проверить наличие подписи
     if (!signFile.exists()) {
       System.err.println(pathString + ": подпись отсутствует");
       return false;
@@ -94,46 +95,67 @@ public class VerifyCommand implements Callable<Integer> {
         Locale.getDefault());
     System.out.println("  Дата подписи: " + formatter.format(date));
     // Размер файла
-    System.out.println("  Размер файла: " + sign.size + " B");
-    boolean sizeChecked = Files.size(filePath) == sign.size;
-    if (!sizeChecked) {
-      System.err.println("! Размер файла не совпадает");
+    if (sign.size < Util.KB) {
+      System.out.println("  Размер файла: " + sign.size + " B");
+    } else {
+      System.out.println("  Размер файла: " + Util.humanizeSize(sign.size) + " (" + sign.size + " B)");
+    }
+    boolean sizeOk = false;
+    if (fileFile.exists()) {
+      sizeOk = Files.size(filePath) == sign.size;
+      if (!sizeOk) {
+        System.err.println("! Размер файла не совпадает");
+      }
+    } else {
+      System.err.println("! Файл не найден");
+      // Просто вывести информацию о подписи при отсутствии файла
     }
     // Хеш
     System.out.println("  " + digest.getAlgorithm() + ": " + Base64.getUrlEncoder()
         .withoutPadding()
         .encodeToString(sign.digest));
-    boolean hashChecked = false;
-    if (sizeChecked) {
+    boolean hashOk = false;
+    if (sizeOk) {
       HashResult hash = Util.hashFile(filePath, digest, bar);
-      hashChecked = Arrays.equals(sign.digest, hash.digest);
-      if (!hashChecked) {
+      hashOk = Arrays.equals(sign.digest, hash.digest);
+      if (!hashOk) {
         System.err.println("! Хеш файла не совпадает");
       }
     } else {
       System.err.println("! Проверка хеша пропущена");
     }
     // Подпись
-    System.out.println("  Ключ: " + Util.uuidFromBytes(sign.keyUuid).toString());
+    UUID keyUuid = Util.uuidFromBytes(sign.keyUuid);
+    System.out.println("  Ключ: " + keyUuid.toString());
     Ed25519PublicKeyParameters key = db.getPubKey(sign.keyUuid);
-    boolean signChecked = false;
+    boolean signOk = false;
     if (key == null) {
       System.err.println("! Ключ отсутствует в БД. Запросите публичный ключ у отправителя файла");
     } else {
+      Set<String> aliases = db.getKeyAliases(sign.keyUuid);
+      if (aliases.size() == 1) {
+        System.out.println("  Алиас ключа: " + String.join(", ", aliases));
+      } else if (aliases.size() > 1) {
+        System.out.println("  Алиасы ключа: " + String.join(", ", aliases));
+      }
+      if (SignKeysDatabase.builtinKeys.containsKey(keyUuid)) {
+        System.out.println("  Подписано разработчиком данной программы");
+      }
       Ed25519Signer signer = new Ed25519Signer();
       signer.init(false, key);
       byte[] payload = sign.getSignPayload();
       signer.update(payload, 0, payload.length);
-      signChecked = signer.verifySignature(sign.sign);
-      if (!signChecked) {
+      signOk = signer.verifySignature(sign.sign);
+      if (!signOk) {
         System.err.println("! Подпись не совпадает");
       }
     }
-    if (sizeChecked && hashChecked && signChecked) {
-      System.out.println("  Файл успешно проверен");
+    if (sizeOk && hashOk && signOk) {
+      System.out.println("= Файл успешно проверен");
       return true;
     }
     System.err.println("! Возникли ошибки при проверке файла");
     return false;
   }
+
 }

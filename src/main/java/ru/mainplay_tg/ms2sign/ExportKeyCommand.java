@@ -25,7 +25,19 @@ public class ExportKeyCommand implements Callable<Integer> {
     }
     SignConfig cfg = new SignConfig(configPath);
     SignKeysDatabase db = cfg.getDatabase();
-    String url = db.exportPubKey(db.resolveUuid(uuid), alias);
+    byte[] keyUuid = db.resolveUuid(uuid);
+    if (keyUuid == null) {
+      System.err.println("Ключ не найден");
+      return 1;
+    }
+    if (alias != null && "-".equals(alias)) {
+      // Выбор первого алиаса для экспорта
+      for (String i : db.getKeyAliases(keyUuid)) {
+        alias = i;
+        break;
+      }
+    }
+    String url = db.exportPubKey(keyUuid, alias);
     System.out.println(url);
     return 0;
   }

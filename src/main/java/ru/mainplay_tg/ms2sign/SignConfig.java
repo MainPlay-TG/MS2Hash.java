@@ -12,6 +12,7 @@ public class SignConfig {
   private final Path configPath;
   public String databaseUrl;
   public String defaultKey;
+  public Boolean defaultBar;
   private SignKeysDatabase db;
 
   public SignConfig() throws IOException {
@@ -26,6 +27,7 @@ public class SignConfig {
     this.configPath = configPath;
     this.databaseUrl = "jdbc:sqlite:" + configPath.getParent().resolve("data.db").toAbsolutePath().toString();
     this.defaultKey = null;
+    this.defaultBar = false;
     load();
   }
 
@@ -43,6 +45,9 @@ public class SignConfig {
         if (loaded.defaultKey != null) {
           this.defaultKey = loaded.defaultKey;
         }
+        if (loaded.defaultBar != null) {
+          this.defaultBar = loaded.defaultBar;
+        }
       }
     }
   }
@@ -51,6 +56,7 @@ public class SignConfig {
     Files.createDirectories(configPath.getParent());
     JustData data = new JustData();
     data.databaseUrl = databaseUrl;
+    data.defaultBar = defaultBar;
     data.defaultKey = defaultKey;
     Util.writeTextFile(configPath, Util.get_gson().toJson(data));
   }
@@ -81,7 +87,7 @@ public class SignConfig {
     SignConfig config = new SignConfig();
     System.out.println(config.configPath.toString());
     try {
-      System.out.println("Путь к БД: " + config.databaseUrl);
+      System.out.println("URL БД: " + config.databaseUrl);
       System.out.println("Ключ: " + config.defaultKey);
       config.getDatabase();
     } catch (Exception e) {
@@ -89,10 +95,10 @@ public class SignConfig {
     }
   }
 
-  @SuppressWarnings("unused")
   private class JustData {
     public String databaseUrl;
     public String defaultKey;
+    public Boolean defaultBar;
 
     public JustData() {
     }

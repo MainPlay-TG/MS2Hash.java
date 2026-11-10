@@ -1,9 +1,6 @@
 package ru.mainplay_tg.ms2sign;
 
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -12,8 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Base64;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
@@ -22,6 +20,8 @@ import ru.mainplay_tg.Util;
 
 public class SignKeysDatabase {
   private String url;
+  public static final Map<String, byte[]> builtinAliases = new HashMap<>();
+  public static final Map<UUID, PublicKeyInfo> builtinKeys = new HashMap<>();
 
   public SignKeysDatabase(String url) throws SQLException {
     this.url = url;
@@ -48,6 +48,23 @@ public class SignKeysDatabase {
         conn.commit();
       }
     }
+    // Загрузка встроенных ключей
+    // При форке нельзя удалять или изменять мои ключи
+    // Можно добавлять собственные
+    String[] urls = {
+        "ms2sign:/pubkey/a28c7ef0-469c-42fb-8c03-9bae280a9ad8/Aq66fnjPt7LcClRxO5CzHmHBdJVge7khZYBCagjMp18?alias=murchaev-hibi",
+        "ms2sign:/pubkey/98891210-644f-4b34-9ef7-76e17dbc138c/nFNWJ56g9kUK21_zWEhxSomADemhRLPv6eYAxMQCx64?alias=murchaev-asty",
+        "ms2sign:/pubkey/d47ded17-ac37-497e-ae64-1afe3f7745cc/f_d52RWiYkFBdRbW6fhS7MP1YyOAg2dcu3j3hU2H4HQ?alias=fin.mainplay-tg.ru",
+    };
+    try {
+      for (String i : urls) {
+        PublicKeyInfo info = PublicKeyInfo.parseUrl(i, true);
+        builtinKeys.put(info.uuidObj(), info);
+        builtinAliases.put(info.alias, info.uuid);
+      }
+    } catch (URISyntaxException e) {
+      System.err.println("Ошибка загрузки встроенных публичных ключей");
+    }
   }
 
   public Connection getConn() throws SQLException {
@@ -68,6 +85,9 @@ public class SignKeysDatabase {
    * Получить UUID ключа по алиасу
    */
   public byte[] findKey(String alias) throws SQLException {
+    if (builtinAliases.containsKey(alias)) {
+      return builtinAliases.get(alias);
+    }
     String sql = "SELECT uuid FROM keyAliases WHERE name = ?";
     try (Connection conn = getConn();
         PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -102,6 +122,10 @@ public class SignKeysDatabase {
   }
 
   public byte[] getPubKeyBytes(byte[] uuid) throws SQLException {
+    PublicKeyInfo b = builtinKeys.get(Util.uuidFromBytes(uuid));
+    if (b != null) {
+      return b.pubBytes;
+    }
     String sql = "SELECT pubkey FROM keys WHERE uuid = ?";
     try (Connection conn = getConn();
         PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -131,18 +155,7 @@ public class SignKeysDatabase {
    * Получить публичный ключ в формате для передачи
    */
   public String exportPubKey(byte[] uuid, String alias) throws SQLException {
-    StringBuilder sb = new StringBuilder()
-        .append("ms2sign:/pubkey/")
-        .append(Util.uuidFromBytes(uuid).toString())
-        .append("/")
-        .append(Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(getPubKeyBytes(uuid)));
-    if (alias != null && !alias.isEmpty()) {
-      sb.append("?alias=");
-      sb.append(alias);
-    }
-    return sb.toString();
+    return new PublicKeyInfo(uuid, getPubKeyBytes(uuid), alias).exportUrl();
   };
 
   public String exportPubKey(byte[] uuid) throws SQLException {
@@ -153,37 +166,12 @@ public class SignKeysDatabase {
    * Импортировать публичный ключ из URL
    */
   public byte[] importPubKey(String url, Boolean saveAlias) throws URISyntaxException, SQLException {
-    URI uri = URI.create(url);
-    // Проверить схему
-    if (!uri.getScheme().equalsIgnoreCase("ms2sign")) {
-      throw new URISyntaxException(url, "Invalid scheme. Expected 'ms2sign'.");
+    PublicKeyInfo info = PublicKeyInfo.parseUrl(url, saveAlias);
+    saveKey(info.uuid, info.pubBytes);
+    if (info.alias != null) {
+      addAlias(info.uuid, info.alias);
     }
-    // Проверить путь
-    String path = uri.getPath();
-    if (path == null) {
-      throw new URISyntaxException(url, "Path is missing");
-    }
-    String[] pathParts = path.substring(1).split("/");
-    if (pathParts.length != 3 || !"pubkey".equals(pathParts[0])) {
-      throw new URISyntaxException(url, "Invalid path structure. Expected /pubkey/{uuid}/{pubKey}");
-    }
-    // Получить UUID
-    byte[] uuid = Util.uuidToBytes(UUID.fromString(pathParts[1]));
-    // Получить публичный ключ
-    byte[] pubKey = Base64.getUrlDecoder().decode(pathParts[2]);
-    if (pubKey.length != 32) {
-      throw new URISyntaxException(url, "Decoded pubKey length is not 32 bytes");
-    }
-    saveKey(uuid, pubKey);
-    // Сохранить алиас
-    if (saveAlias) {
-      String query = uri.getQuery();
-      if (query != null && query.startsWith("alias=")) {
-        String alias = URLDecoder.decode(query.substring(6), StandardCharsets.UTF_8);
-        addAlias(uuid, alias);
-      }
-    }
-    return uuid;
+    return info.uuid;
   }
 
   public byte[] importPubKey(String url) throws URISyntaxException, SQLException {
@@ -194,12 +182,16 @@ public class SignKeysDatabase {
    * Получить все алиасы ключа
    */
   public Set<String> getKeyAliases(byte[] uuid) throws SQLException {
+    Set<String> result = new HashSet<>();
+    PublicKeyInfo b = builtinKeys.get(Util.uuidFromBytes(uuid));
+    if (b != null) {
+      result.add(b.alias);
+    }
     String sql = "SELECT name FROM keyAliases WHERE uuid = ?";
     try (Connection conn = getConn();
         PreparedStatement stmt = conn.prepareStatement(sql)) {
       stmt.setBytes(1, uuid);
       try (ResultSet rs = stmt.executeQuery()) {
-        Set<String> result = new HashSet<>();
         while (rs.next()) {
           result.add(rs.getString("name"));
         }
